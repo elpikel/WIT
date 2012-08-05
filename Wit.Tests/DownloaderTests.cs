@@ -17,8 +17,13 @@ namespace Wit.Tests
             [TestMethod]
             public void ShouldReturnNonEmptyStringWhenDownloadingMainPage()
             {
-                var downloader = new Downloader("http://whereisthecool.com/page/2", new Downloader.OnPageDownloaded(Downloaded));
+                var downloader = new Downloader("http://whereisthecool.com/page/2", new Downloader.OnPageDownloaded(Downloaded), new Downloader.ImageDownloaded(ImageDownloaded));
                 downloader.DownloadPage();
+            }
+
+            private void ImageDownloaded(Uri imagePath)
+            {
+                throw new NotImplementedException();
             }
 
             private string Downloaded(string page)
