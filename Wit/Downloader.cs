@@ -6,18 +6,25 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using HtmlAgilityPack;
 using Windows.Storage;
 using Windows.UI.Xaml.Media.Imaging;
 
 namespace Wit
 {
-    public class Downloader
+    public interface IDownloader
+    {
+        void DownloadPage();
+        void DownloadImage();
+    }
+
+    public class Downloader : IDownloader
     {
         private string _url;
         private string _page;
         private BitmapImage _image;
 
-        public delegate string OnPageDownloaded(string page);
+        public delegate void OnPageDownloaded(HtmlDocument page);
         public delegate void ImageDownloaded(Uri imagePath);
 
         public event OnPageDownloaded DownloadedPage;
@@ -32,14 +39,9 @@ namespace Wit
 
         public async void DownloadPage()
         {
-            HttpClientHandler handler = new HttpClientHandler();
-            handler.UseDefaultCredentials = true;
-            handler.AllowAutoRedirect = true;
-            HttpClient client = new HttpClient(handler);
-            HttpResponseMessage response = await client.GetAsync(_url);
-            response.EnsureSuccessStatusCode();
-            _page = await response.Content.ReadAsStringAsync();
-            DownloadedPage(_page);
+            var webGet = new HtmlWeb();
+            var document = await webGet.LoadFromWebAsync(_url);
+            DownloadedPage(document);
         }
 
         public async void DownloadImage()
@@ -60,20 +62,6 @@ namespace Wit
                 {
                     await stream.CopyToAsync(filestream);
                     OnDownloadedImage(new Uri(string.Format("ms-appdata:///local/{0}.jpg", uniqueName), UriKind.Absolute));
-                }
-            }
-        }
-
-        private void GetRequestStreamCallback(IAsyncResult asynchronousResult)
-        {
-            HttpWebRequest request = (HttpWebRequest)asynchronousResult.AsyncState;
-
-            using (Stream postStream = request.EndGetRequestStream(asynchronousResult))
-            {
-                using (StreamReader rs = new StreamReader(postStream))
-                {
-                    _page = rs.ReadToEnd();
-                    DownloadedPage(_page);
                 }
             }
         }

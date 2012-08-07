@@ -13,6 +13,8 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using Wit;
+using HtmlAgilityPack;
 
 // The Grouped Items Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234231
 
@@ -25,6 +27,9 @@ namespace Piwo
     {
         public GroupedItemsPage()
         {
+            var downloader = new Downloader("http://whereisthecool.com/page/2", new Downloader.OnPageDownloaded(Downloaded), new Downloader.ImageDownloaded(ImageDownloaded));
+            downloader.DownloadPage();
+
             this.InitializeComponent();
         }
 
@@ -71,6 +76,21 @@ namespace Piwo
             // by passing required information as a navigation parameter
             var itemId = ((SampleDataItem)e.ClickedItem).UniqueId;
             this.Frame.Navigate(typeof(ItemDetailPage), itemId);
+        }
+
+        private void ImageDownloaded(Uri imagePath)
+        {
+            //Assert.AreEqual(imagePath.AbsolutePath, "");
+        }
+
+        private void Downloaded(HtmlDocument page)
+        {
+            var x = 1;
+            var parser = new Parser();
+            var imageUrls = parser.Parse(page);
+
+            System.Diagnostics.Debug.WriteLine(page);
+            //Assert.AreNotSame(string.Empty, page);
         }
     }
 }

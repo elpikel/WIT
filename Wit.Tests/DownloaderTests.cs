@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using HtmlAgilityPack;
 using Microsoft.VisualStudio.TestPlatform.UnitTestFramework;
 
 namespace Wit.Tests
@@ -21,16 +22,22 @@ namespace Wit.Tests
                 downloader.DownloadPage();
             }
 
-            private void ImageDownloaded(Uri imagePath)
+            [TestMethod]
+            public void ShouldReturnNonEmptyUrlWhenDownloadingImages()
             {
-                throw new NotImplementedException();
+                var downloader = new Downloader("http://25.media.tumblr.com/tumblr_m8ebzkziRA1qzleu4o1_400.jpg", new Downloader.OnPageDownloaded(Downloaded), new Downloader.ImageDownloaded(ImageDownloaded));
+                downloader.DownloadImage();
             }
 
-            private string Downloaded(string page)
+            private void ImageDownloaded(Uri imagePath)
+            {
+                Assert.AreEqual(imagePath.AbsolutePath, "");
+            }
+
+            private void Downloaded(HtmlDocument page)
             {
                 System.Diagnostics.Debug.WriteLine(page);
                 Assert.AreNotSame(string.Empty, page);
-                return page;
             }
         }
     }
